@@ -1,0 +1,160 @@
+pipeline {
+  // pipelineを実行するagentの設定。
+  // JenkinsのGUI上からagentの設定が可能だが、
+  // Jenkinsfileに記載することでGit管理できる対象が増えるのでおすすめ
+  agent {
+    kubernetes {
+      cloud 'openshift'
+      yaml """\
+        apiVersion: v1
+        kind: Pod
+        spec:
+          serviceAccountName: jenkins
+          containers:
+            - name: jnlp
+              image: image-registry.openshift-image-registry.svc:5000/jenkins/custom-jenkins-agent
+              args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
+            - name: postgres
+              image: image-registry.openshift-image-registry.svc:5000/openshift/postgresql:12
+              env:
+                - name: POSTGRESQL_USER
+                  value: 'freelancer'
+                - name: POSTGRESQL_PASSWORD
+                  value: 'password'
+                - name: POSTGRESQL_DATABASE
+                  value: 'freelancerdb_test'
+        """.stripIndent()
+    }
+  }
+
+  environment {
+    deploy_branch = "origin/main"
+    deploy_project = "user-app"
+    app_name = 'tettei-nyumon'
+    app_image = "image-registry.openshift-image-registry.svc:5000/${deploy_project}/${app_name}"
+  }
+
+  stages {
+    stage('Application build') {
+      steps {
+        dir('chap18/jenkins_pipeline') {
+          sh 'mvn -version'
+
+          // アプリケーションのビルド
+          sh 'mvn clean package -DskipTests'
+        }
+      }
+    }
+
+    stage('Application test') {
+      steps {
+        dir('chap18/jenkins_pipeline') {
+          // テスト用DBへテストデータのロード
+          sh 'PGPASSWORD=password psql -U freelancer -d freelancerdb_test -h localhost -f etc/testdata.sql'
+
+          // ユニットテスト実行
+          sh 'mvn test'
+
+          // ユニットテストの結果を保存
+          junit allowEmptyResults: true,
+                keepLongStdio: true,
+                healthScaleFactor: 2.0,
+                testResults: '**/target/surefire-reports/TEST-*.xml'
+        }
+      }
+    }
+
+    stage('Image Build') {
+      // mainブランチのみ実行
+      when {
+        expression {
+          return env.GIT_BRANCH == "${deploy_branch}" || params.FORCE_FULL_BUILD
+        }
+      }
+
+      steps {
+        echo "Building OpenShift container image"
+        dir('chap18/jenkins_pipeline') {
+          script {
+            openshift.withCluster() {
+              openshift.withProject("${deploy_project}") {
+                // BuildConfigのマニフェストを適用
+                openshift.apply(openshift.process('-f', 'openshift/application-build.yaml', '-p', "NAME=${app_name}"))
+                
+                // BuildConfigを実行
+                openshift.selector("bc", "${app_name}").startBuild("--from-file=./target/freelancer-service.jar", "--wait=true")
+                // ビルドしたイメージに対して、Gitのコミットハッシュ値でタグ付け
+                openshift.tag("${app_name}:latest", "${app_name}:${env.GIT_COMMIT}")
+              }
+            }
+          }
+        }
+      }
+    }
+
+    stage('Application deploy') {
+      // mainブランチのみ実行
+      when {
+        expression {
+          return env.GIT_BRANCH == "${deploy_branch}" || params.FORCE_FULL_BUILD
+        }
+      }
+
+      steps {
+        echo "deploy"
+        dir('chap18/jenkins_pipeline') {
+          script {
+            openshift.withCluster() {
+              openshift.withProject("${deploy_project}") {
+                // アプリケーションマニフェストを適用（デプロイ）
+                openshift.apply(openshift.process('-f', 'openshift/application-deploy.yaml', '-p', "NAME=${app_name}", '-p', "APP_IMAGE=${app_image}", "-p", "APP_IMAGE_TAG=${env.GIT_COMMIT}"))
+
+                // アプリケーションが期待するPod数になるまで待機
+                def dc = openshift.selector("dc", "${app_name}").object()
+                def dc_version = dc.status.latestVersion
+                def rc = openshift.selector("rc", "${app_name}-${dc_version}").object()
+
+                echo "Waiting for ReplicationController ${app_name}-${dc_version} to be ready"
+                while (rc.spec.replicas != rc.status.readyReplicas) {
+                  sleep 5
+                  rc = openshift.selector("rc", "${app_name}-${dc_version}").object()
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // アプリケーションのデプロイ後に疎通テストをする場合
+    stage('Application integration test') {
+      // mainブランチのみ実行
+      when {
+        expression {
+          return env.GIT_BRANCH == "${deploy_branch}" || params.FORCE_FULL_BUILD
+        }
+      }
+
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.withProject("${deploy_project}") {
+              // Routeリソースからアプリケーションのホスト名を取得
+              def dc = openshift.selector("route", "${app_name}").object()
+              def url = dc.spec.host
+              echo "${url}"
+
+              while (true) {
+                def app_status = sh(returnStdout: true, script: "curl ${url}/hello -o /dev/null -w '%{http_code}' -s").trim()
+                if(app_status == "200") {
+                  break;
+                }
+                sleep 5
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

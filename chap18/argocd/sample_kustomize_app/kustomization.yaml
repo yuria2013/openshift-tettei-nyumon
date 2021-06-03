@@ -1,0 +1,9 @@
+namePrefix: openshift-tettei-nyumon-
+resources:
+  - deployment.yaml
+  - service.yaml
+  - route.yaml
+images:
+  - name: quay.io/siamaksade/spring-petclinic
+    newTag: 'e02da02df1d6a7f0fc03f3cefab98a80881f2692'
+

@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-first-app
+spec:
+  destination:
+    namespace: my-argocd-app
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: chap18/argocd/sample_kustomize_app
+    repoURL: https://github.com/mosuke5/openshift-tettei-nyumon
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

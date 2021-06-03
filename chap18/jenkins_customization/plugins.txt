@@ -1,0 +1,3 @@
+generic-webhook-trigger:1.72
+slack:2.47
+scmskip:1.0.3

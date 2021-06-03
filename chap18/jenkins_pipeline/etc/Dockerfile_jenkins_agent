@@ -1,0 +1,13 @@
+# OpenShiftの内部レジストリに格納されているjenkins-agent-mavenを活用
+FROM image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven
+
+ENV PGDG_REPO_URL https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+USER root
+
+# アプリケーションのユニットテストで利用する
+# PostgreSQLにデータをロードするためクライアントをインストール
+RUN yum install -y ${PGDG_REPO_URL} && yum install -y postgresql \
+    && rm -rf /var/tmp/*
+
+USER 1001

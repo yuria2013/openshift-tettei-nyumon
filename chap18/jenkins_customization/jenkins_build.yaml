@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: customized-jenkins
+spec:
+  source:
+    git:
+      uri: https://github.com/mosuke5/openshift-tettei-nyumon
+      ref: "main"
+    type: Git
+    contextDir: "chap18/jenkins_customization"
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: jenkins:2
+        namespace: openshift
+    type: Source
+  output:
+    to:
+      kind: ImageStreamTag
+      name: customized-jenkins:latest
+---
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: customized-jenkins
