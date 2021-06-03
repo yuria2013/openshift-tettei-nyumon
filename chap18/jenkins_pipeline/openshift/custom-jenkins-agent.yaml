@@ -49,7 +49,7 @@ parameters:
 - name: SOURCE_REPOSITORY_URL
   displayName: Git Repository URL
   required: true
-  value: https://github.com/mosuke5/book-test/
+  value: https://github.com/team-ohc-jp-place/openshift-tettei-nyumon
 - name: SOURCE_REPOSITORY_REF
   displayName: Git Reference
   required: true
