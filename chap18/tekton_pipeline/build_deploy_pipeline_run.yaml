@@ -7,7 +7,7 @@ spec:
     name: build-deploy-pipeline
   params: 
     - name: git-url
-      value: https://github.com/mosuke5/openshift-tettei-nyumon
+      value: https://github.com/team-ohc-jp-place/openshift-tettei-nyumon
     - name: git-revision
       value: main
     - name: image
