@@ -52,8 +52,8 @@ kind: EventListener
 metadata:
   name: build-deploy-pipeline
 spec:
-  # 前手順で作成したService Accountの指定
-  serviceAccountName: trigger
+  # デフォルトで用意されているService Accountを使用
+  serviceAccountName: pipeline
   triggers:
     - bindings:
         # OpenShift Pipelinesで登録済みのClusterTriggerBindingを活用
