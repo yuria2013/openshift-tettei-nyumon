@@ -6,7 +6,7 @@ metadata:
 spec:
   source:
     git:
-      uri: https://github.com/mosuke5/openshift-tettei-nyumon
+      uri: https://github.com/team-ohc-jp-place/openshift-tettei-nyumon
       ref: "main"
     type: Git
     contextDir: "chap18/jenkins_customization"
