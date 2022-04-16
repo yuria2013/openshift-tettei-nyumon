@@ -4,7 +4,7 @@
 |---|---|---|
 |162|8.2|[サンプルアプリのデプロイ時、Serivce作成コマンドが必要](https://github.com/team-ohc-jp-place/openshift-tettei-nyumon/blob/main/Errata.md#82%E3%81%A7%E3%81%AE%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%E3%82%A2%E3%83%97%E3%83%AA%E3%81%AE%E3%83%87%E3%83%97%E3%83%AD%E3%82%A4-p162)|
 |173|8.2.5|[図8.5 worker-2のenp1s0のIPアドレス](https://github.com/team-ohc-jp-place/openshift-tettei-nyumon/blob/main/Errata.md#%E5%9B%B38.5%20worker-2%E3%81%AEenp1s0%E3%81%AEIP%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9)|
-|491|16.4.1|[図16.11 jaeger-clientとjaeger-agentの記載](https://github.com/team-ohc-jp-place/openshift-tettei-nyumon/edit/main/Errata.md#%E5%9B%B31611-jaeger-client%E3%81%A8jaeger-agent%E3%81%AE%E8%A8%98%E8%BC%89)|
+|491|16.4.1|[図16.11 jaeger-clientとjaeger-agentの記載](https://github.com/team-ohc-jp-place/openshift-tettei-nyumon/blob/main/Errata.md#%E5%9B%B31611-jaeger-client%E3%81%A8jaeger-agent%E3%81%AE%E8%A8%98%E8%BC%89)|
 
 ## 8.2でのサンプルアプリのデプロイ (p.162)
 
