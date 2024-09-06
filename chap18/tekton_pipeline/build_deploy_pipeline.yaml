@@ -58,10 +58,17 @@ spec:
       params:
         - name: script
           value: |
+            cd $(workspaces.source.path)
+            # 参考用出力: image-digestが前のTaskで生成されていることを確認
+            # ls -l
+            find / | grep "digest"
+            # 参考用出力: image-digestを確認
+            # cat image-digest
+
             # テンプレートを展開してデプロイ
             oc process -f $(params.context)/$(params.manifest-dir) \
               -p APP_IMAGE=$(params.image) \
-              -p APP_IMAGE_DIGEST=`date "+%Y%m%d%H%M%S"` \
+              -p APP_IMAGE_DIGEST=`cat image-digest` \
               | oc apply -f -
       workspaces:
         - name: source
