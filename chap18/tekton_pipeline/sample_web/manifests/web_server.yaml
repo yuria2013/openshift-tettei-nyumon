@@ -44,7 +44,7 @@ objects:
             app: "${NAME}"
         spec:
           containers:
-            - image: "${APP_IMAGE}@${APP_IMAGE_DIGEST}"
+            - image: "${APP_IMAGE}:${APP_IMAGE_DIGEST}"
               name: web
 parameters:
  - name: NAME
